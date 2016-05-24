@@ -51,20 +51,32 @@ namespace ManagingProducts.Web.Controllers
             handler.Delete(dto.Id);
         }
         [HttpPost]
-        public string GetStatisticProduct(string productId)
+        public string GetStatisticProduct(int id)
         {
-            var id = (int)JsonConvert.DeserializeObject(productId);
+           // var id = Int32.Parse(productId);
             
             var product = handler.Get(id);
             var productStatisticViewModel = new ProductStatisticViewModel();
             productStatisticViewModel.Product = product.Name;
             var price = product.Price;
             productStatisticViewModel.Price = price;
-            var quantity = kernel.Get<IHandler<OperationDto>>().GetAll().Where(i => i.ProductId == id).Select(i => i.Quantity).Sum();
+            var operations = kernel.Get<IHandler<OperationDto>>().GetAll().Where(i => i.ProductId == id).ToList();
+            var quantity = GetTotalQuantity(operations);
             productStatisticViewModel.TotalQuantity = quantity;
             productStatisticViewModel.TotalCost = quantity * price;
             
             return JsonConvert.SerializeObject(productStatisticViewModel);
+        }
+
+        private int GetTotalQuantity(List<OperationDto> operations )
+        {
+            var quantity = 0;
+            
+            var intoQuantity = operations.Where(i => i.TypeOfOperation.Name == "into").Select(i => i.Quantity).Sum();
+            var outQuantity = operations.Where(i => i.TypeOfOperation.Name == "out").Select(i => i.Quantity).Sum();
+            quantity = intoQuantity - outQuantity;
+
+            return quantity;
         }
     }
             

@@ -56,9 +56,7 @@
                 add: true,
                 del: true,
                 edit: true,
-               // view: true,
                 viewtext: "Смотреть",
-                //viewtitle: "Выбранная запись",
                 addtext: "Добавить",
                 edittext: "Изменить",
                 deltext: "Удалить"
@@ -88,46 +86,44 @@
                 case "edit":
                     params.url = '@Url.Action("Edit")';
 
-                default:
+                    default:
+                    }
+
+                },
+                afterSubmit: function(response, postdata) {
+
+                    $(this).jqGrid('setGridParam', { datatype: 'json' }).trigger('reloadGrid')
+                    return [true, "", 0]
                 }
-
-            },
-            afterSubmit: function (response, postdata) {
-
-                $(this).jqGrid('setGridParam', { datatype: 'json' }).trigger('reloadGrid')
-                return [true, "", 0]
-            }
+            };
         };
-    };
 
         jQuery("#jqg")
             .navGrid('#jpager', { edit: false, add: false, del: false, search: false })
             .navButtonAdd('#jpager', {
                 caption: "Statistic of product",
-                onClickButton: function () {
+                onClickButton: function() {
 
-                    $('.modal').on('shown.bs.modal', function () {
+                    $('.modal').on('shown.bs.modal', function() {
                         $(this).css("z-index", parseInt($('.modal-backdrop').css('z-index')) + 1);
                     });
 
                     var id = parseInt($('.ui-state-highlight').attr('id'));
                     debugger;
                     $.ajax({
-                        type: 'POST',
-                        contentType: "application/json charset=utf-8",
-                        url: "GetStatisticProduct",
-                        data: JSON.stringify(id)
+                        url: "GetStatisticProduct?productId=",
+                        data: {"productId":id}
                     }).success(function(response) {
-                        
+
                         $('#myModal').modal('show');
                     });
                     $('#myModal').modal('show');
                 },
                 position: "last"
             });
-        
+
         $("#stat").jqGrid({
-            url: '@Url.Action("GetStatisticProduct" )',
+            url: "GetStatisticProduct?productId=" + $('.ui-state-highlight').attr('id'),
             datatype: "json",
             colNames: ['Product', 'Price', 'TotalQuantity', 'TotalCost'],
             colModel: [

@@ -191,6 +191,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="ViewModel\Interfaces\IBaseViewModel.cs" />
+    <Compile Include="ViewModel\OperationStatisticViewModel.cs" />
     <Compile Include="ViewModel\OperationViewModel.cs" />
     <Compile Include="ViewModel\ProductStatisticViewModel.cs" />
     <Compile Include="ViewModel\ProductViewModel.cs" />
