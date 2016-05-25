@@ -55,6 +55,7 @@
     <Compile Include="Entities\User.cs" />
     <Compile Include="IRepositories\IRepository.cs" />
     <Compile Include="ManagingProductContext.cs" />
+    <Compile Include="ManagingProductsDbInitializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Entities\Repositories\Repository.cs" />
   </ItemGroup>

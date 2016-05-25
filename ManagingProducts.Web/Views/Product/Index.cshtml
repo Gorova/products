@@ -13,17 +13,54 @@
                 <table id="stat"></table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
+                <button id="clear" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+
             </div>
         </div>
     </div>
 </div>
+
+ @*//in progress*@
+<div class="modal fade" tabindex="-1" role="dialog" id="oprationForm">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Modal title</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form">
+                    <div class="form-group">
+                        <label for="product">Product</label>
+                        <input type="text" class="form-control" id="product">
+                    </div>
+                    <div class="form-group">
+                        <label for="typeOfOperation">type of Operation</label>
+                        @*//dropdawn*@
+                    </div>
+                    <div class="form-group">
+                        <label for="product">Quantity</label>
+                        <input type="text" class="form-control" id="quantity">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="clear" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <input type="submit" value="save" class="btn btn-default" />
+                <input type="button" value="cancel" class="btn btn-default" onclick="location.href = '@Url.Action("Index", "Product")'" />
+
+            </div>
+        </div>
+    </div>
+</div>
+
+          
 <style>
     
-     .ui-jqgrid .ui-pg-input {height: 20px;}
+    .ui-jqgrid .ui-pg-input {height: 20px;}
     .ui-jqgrid .ui-jqgrid-pager {height:40px;}
     .ui-jqgrid .ui-jqgrid-pager .ui-pg-div {font-size:14px;}
+    table.ui-pg-table.navtable {width: 560px;}
 </style>
 
 <script type="text/javascript">
@@ -44,22 +81,21 @@
             sortName: 'Name',
             viewrecords: true,
             sortOrder: "desc",
-            loadonce: true,
+            loadonce: false,
+            
             caption: "List of prosucts",
-            width: 800
-
+            width: 1000
         });
-
 
         $("#jqg").jqGrid('navGrid', '#jpager', {
                 refresh: false,
                 add: true,
                 del: true,
                 edit: true,
-                viewtext: "Смотреть",
-                addtext: "Добавить",
-                edittext: "Изменить",
-                deltext: "Удалить"
+                viewtext: "Details",
+                addtext: "add",
+                edittext: "Edit",
+                deltext: "Delete"
             },
             update("edit"),
             update("add"),
@@ -78,69 +114,101 @@
                 var list = $("#jqg");
                 var selectedRow = list.getGridParam("selrow");
                 rowData = list.getRowData(selectedRow);
-                switch (act) {
-                case "add":
+
+                if (act === "add")
                     params.url = '@Url.Action("Create")';
-                case "del":
+                else if (act === "del")
                     params.url = '@Url.Action("Delete")';
-                case "edit":
+                else if (act === "edit")
                     params.url = '@Url.Action("Edit")';
-
-                    default:
-                    }
-
-                },
+                
+            },
                 afterSubmit: function(response, postdata) {
-
                     $(this).jqGrid('setGridParam', { datatype: 'json' }).trigger('reloadGrid')
                     return [true, "", 0]
                 }
-            };
         };
+    };
 
         jQuery("#jqg")
             .navGrid('#jpager', { edit: false, add: false, del: false, search: false })
             .navButtonAdd('#jpager', {
-                caption: "Statistic of product",
-                onClickButton: function() {
-
-                    $('.modal').on('shown.bs.modal', function() {
+                caption: "prod report",
+                onClickButton: function () {
+                    $('.modal').on('shown.bs.modal', function () {
                         $(this).css("z-index", parseInt($('.modal-backdrop').css('z-index')) + 1);
                     });
 
-                    var id = parseInt($('.ui-state-highlight').attr('id'));
-                    debugger;
-                    $.ajax({
-                        url: "GetStatisticProduct?productId=",
-                        data: {"productId":id}
-                    }).success(function(response) {
-
-                        $('#myModal').modal('show');
-                    });
+                    id = parseInt($('.ui-state-highlight').attr('id'));
                     $('#myModal').modal('show');
+
+                    $("#stat").jqGrid({
+                        url: "/Product/GetStatisticProduct?id=" + id,
+                        datatype: "json",
+                        colNames: ['Product', 'Price', 'TotalQuantity', 'TotalCost'],
+                        colModel: [
+                            { name: 'Product', index: 'Product', editable: true, width: 100, edittype: 'text' },
+                            { name: 'Price', index: 'Price', width: 50, edittype: 'text', align: "right" },
+                            { name: 'TotalQuantity', index: 'TotalQuantity', width: 50, edittype: 'text' },
+                            { name: 'TotalCost', index: 'TotalCost', width: 50, edittype: 'text', align: "right" }
+                        ],
+                        sortName: 'Name',
+                        viewrecords: true,
+                        sortOrder: "desc",
+                        caption: "report poduct",
+                        width: 400,
+                        loadonce: true,
+                        reloadGrid: true,
+                        drag: true
+                    });
                 },
                 position: "last"
             });
 
-        $("#stat").jqGrid({
-            url: "GetStatisticProduct?productId=" + $('.ui-state-highlight').attr('id'),
-            datatype: "json",
-            colNames: ['Product', 'Price', 'TotalQuantity', 'TotalCost'],
-            colModel: [
-                { name: 'Product', index: 'Product', width: 100, editable: true, edittype: 'text', sortable: true },
-                { name: 'Price', index: 'Price', width: 50, editable: true, edittype: 'text', align: "right", sortable: true },
-                { name: 'TotalQuantity', index: 'TotalQuantity', width: 50, editable: true, edittype: 'text', sortable: true },
-                { name: 'TotalCost', index: 'TotalCost', width: 50, editable: true, edittype: 'text', align: "right", sortable: true }
-            ],
-            sortName: 'Name',
-            viewrecords: true,
-            sortOrder: "desc",
-            loadonce: true,
-            caption: "statictic information of product",
-            width: 400
-        });
-    });
+        jQuery("#jqg")
+           .navGrid('#jpager', { edit: false, add: false, del: false, search: false })
+           .navButtonAdd('#jpager', {
+               caption: "oper report",
+               onClickButton: function () {
+                   $('.modal').on('shown.bs.modal', function () {
+                       $(this).css("z-index", parseInt($('.modal-backdrop').css('z-index')) + 1);
+                   });
 
+                   id = parseInt($('.ui-state-highlight').attr('id'));
+                   $('#myModal').modal('show');
+
+                   $("#stat").jqGrid({
+                       url: "/Product/GetStatisticOperations?id=" + id,
+                       datatype: "json",
+                       colNames: ['User', 'CreatingDate', 'TotalQuantity', 'TypeOfOperation'],
+                       colModel: [
+                           { name: 'User', index: 'User', editable: true, width: 100, edittype: 'text', sortable: true },
+                           { name: 'CreatingDate', index: 'CreatingDate', width: 50, edittype: 'text', align: "right", sortable: true },
+                           { name: 'TotalQuantity', index: 'TotalQuantity', width: 50, edittype: 'text', sortable: true },
+                           { name: 'TypeOfOperation', index: 'TypeOfOperation', width: 50, edittype: 'text', align: "right", sortable: true }
+                       ],
+                       sortName: 'User',
+                       viewrecords: true,
+                       sortOrder: "desc",
+                       caption: "report operations",
+                       width: 400,
+                       loadonce: true
+                   });
+                }
+           });
+        //in progress
+        jQuery("#jqg")
+            .navGrid('#jpager', { edit: false, add: false, del: false, search: false })
+            .navButtonAdd('#jpager', {
+                caption: "into/out goods",
+                onClickButton: function () {
+                    $('.modal').on('shown.bs.modal', function () {
+                        $(this).css("z-index", parseInt($('.modal-backdrop').css('z-index')) + 1);
+                    });
+                },
+                position: "last"
+            });
+    });
 </script>
 
 

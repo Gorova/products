@@ -31,7 +31,6 @@ namespace ManagingProducts.Web.Controllers
         {
             var dto = Mapper.Map<ProductViewModel, ProductDto>(viewModel);
             handler.Update(dto);
-            
         }
 
         [HttpPost]
@@ -46,26 +45,45 @@ namespace ManagingProducts.Web.Controllers
         {
             var product = handler.Get(viewModel.Id);
 
-
             var dto = Mapper.Map<ProductViewModel, ProductDto>(viewModel);
             handler.Delete(dto.Id);
         }
-        [HttpPost]
+
         public string GetStatisticProduct(int id)
         {
-           // var id = Int32.Parse(productId);
-            
+            var dataForTable = new List<ProductStatisticViewModel>();
+
             var product = handler.Get(id);
             var productStatisticViewModel = new ProductStatisticViewModel();
+            
             productStatisticViewModel.Product = product.Name;
             var price = product.Price;
             productStatisticViewModel.Price = price;
-            var operations = kernel.Get<IHandler<OperationDto>>().GetAll().Where(i => i.ProductId == id).ToList();
+            var operations = GetOperations(id);
             var quantity = GetTotalQuantity(operations);
             productStatisticViewModel.TotalQuantity = quantity;
             productStatisticViewModel.TotalCost = quantity * price;
             
-            return JsonConvert.SerializeObject(productStatisticViewModel);
+            dataForTable.Add(productStatisticViewModel);
+            return JsonConvert.SerializeObject(dataForTable);
+        }
+
+        public string GetStatisticOperations(int id)
+        { 
+            var list = new List<OperationStatisticViewModel>();
+            var operations = GetOperations(id);
+
+            foreach (var op in operations)
+            {
+                var statOperViewModel = new OperationStatisticViewModel();
+                statOperViewModel.User = op.User.ToString();
+                statOperViewModel.CreatingDate = op.DateOfOperation;
+                statOperViewModel.TotalQuantity = GetTotalQuantity(operations);
+                statOperViewModel.TypeOfOperation = op.TypeOfOperation.ToString();
+                list.Add(statOperViewModel);
+             }
+
+            return JsonConvert.SerializeObject(list);
         }
 
         private int GetTotalQuantity(List<OperationDto> operations )
@@ -78,7 +96,11 @@ namespace ManagingProducts.Web.Controllers
 
             return quantity;
         }
+
+        private List<OperationDto> GetOperations(int id)
+        {
+            return kernel.Get<IHandler<OperationDto>>().GetAll().Where(i => i.ProductId == id).ToList();
+        } 
     }
-            
 }
 
