@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using AutoMapper;
 using ManagingProducts.BLL.API;
 using ManagingProducts.Common.DTO;
@@ -42,8 +43,17 @@ namespace ManagingProducts.BLL.Handler
 
         public void Delete(int id)
         {
-            repository.Delete<ProductDto>(id);
-            ////clear product.operations
+            var operationsProduct = repository.GetAll<Operation>().Where(i => i.ProductId == id).ToList();
+            if (operationsProduct != null)
+            {
+                foreach (var op in operationsProduct)
+                {
+                    repository.Delete<Operation>(op.Id);
+                }
+            }
+
+            repository.Delete<Product>(id);
+
             repository.Save();
         }
     }

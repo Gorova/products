@@ -1,8 +1,8 @@
-﻿<table id="jqg"></table>
+﻿
+<table id="jqg"></table>
 <div id="jpager"></div>
 <br/>
-
-<div class="modal fade" tabindex="-1" role="dialog" id="myModal">
+<div class="modal fade" tabindex="-1" role="dialog" id="statProductModel">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -10,18 +10,33 @@
                 <h4 class="modal-title">Modal title</h4>
             </div>
             <div class="modal-body">
-                <table id="stat"></table>
+                <table id="statProduct"></table>
             </div>
             <div class="modal-footer">
                 <button id="clear" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-
             </div>
         </div>
     </div>
 </div>
 
- @*//in progress*@
-<div class="modal fade" tabindex="-1" role="dialog" id="oprationForm">
+<div class="modal fade" tabindex="-1" role="dialog" id="statOperationModel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Statistic of operations</h4>
+            </div>
+            <div class="modal-body">
+                <table id="statOperation"></table>
+            </div>
+            <div class="modal-footer">
+                <button id="clear2" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="operationForm">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -29,32 +44,37 @@
                 <h4 class="modal-title">Modal title</h4>
             </div>
             <div class="modal-body">
-                <form role="form">
+                <form role="form" id="prod">
+                    <label for="product">Product for operation</label>
+                    <div id="product"></div>
+                    <div hidden id="productId"></div>
+
                     <div class="form-group">
-                        <label for="product">Product</label>
-                        <input type="text" class="form-control" id="product">
+                        <label for="quantity">Quantity</label>
+                        <input id="quantity" name="productQuantity" type="text" value="" class="form-control"/>
                     </div>
+
+
                     <div class="form-group">
                         <label for="typeOfOperation">type of Operation</label>
-                        @*//dropdawn*@
+                        <select id="typeOfOperation">
+                            <option id="in"></option>
+                            <option id="out"></option>
+                        </select>
                     </div>
-                    <div class="form-group">
-                        <label for="product">Quantity</label>
-                        <input type="text" class="form-control" id="quantity">
-                    </div>
+                    <div id="checkQuanty" style="color: red"></div>
+                    <div id="checkResult" style="color: red"></div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button id="clear" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <input type="submit" value="save" class="btn btn-default" />
-                <input type="button" value="cancel" class="btn btn-default" onclick="location.href = '@Url.Action("Index", "Product")'" />
-
+                <button id="saveOperation" class="btn btn-default" type="submit" data-dismiss="modal">save</button>
+                <button class="btn btn-default" type="button" data-dismiss="modal">cancel</button>
+            </div>
             </div>
         </div>
     </div>
-</div>
 
-          
+         
 <style>
     
     .ui-jqgrid .ui-pg-input {height: 20px;}
@@ -64,16 +84,17 @@
 </style>
 
 <script type="text/javascript">
+    $(document).ready(function() {
+        $.ajaxSetup({ cache: false });
 
-    $(function() {
         $("#jqg").jqGrid({
             url: '@Url.Action("Get")',
             datatype: "json",
             colNames: ['Id', 'Name', 'Price'],
             colModel: [
-                { name: 'Id', index: 'Id', width: 30, stype: 'text', key: true },
-                { name: 'Name', index: 'Name', width: 150, editable: true, edittype: 'text', sortable: true },
-                { name: 'Price', index: 'Price', width: 80, editable: true, edittype: 'text', align: "right", sortable: true }
+                { name: 'Id', index: 'Id', width: 30, hidden: true, stype: 'text', key: true },
+                { name: 'Name', index: 'Name', width: 150, editable: true, edittype: 'text', editrules: { required: true }, editoptions: { size: 50 }, sortable: true },
+                { name: 'Price', index: 'Price', width: 80, editable: true, editrules: { required: true, number: true, maxValue: 10000 }, align: "right", sortable: true }
             ],
             rowNum: 10,
             rowList: [10, 25, 50, 100],
@@ -82,18 +103,20 @@
             viewrecords: true,
             sortOrder: "desc",
             loadonce: false,
-            
+
             caption: "List of prosucts",
             width: 1000
         });
 
         $("#jqg").jqGrid('navGrid', '#jpager', {
+                search: false,
                 refresh: false,
                 add: true,
                 del: true,
                 edit: true,
+                view: true,
                 viewtext: "Details",
-                addtext: "add",
+                addtext: "Add",
                 edittext: "Edit",
                 deltext: "Delete"
             },
@@ -102,47 +125,52 @@
             update("del")
         );
 
-    function update(act) {
-        return {
-            closeAfterAdd: true,
-            height: 250,
-            width: 400,
-            closeAfterEdit: true,
-            reloadAfterSubmit: true,
-            drag: true,
-            onclickSubmit: function (params) {
-                var list = $("#jqg");
-                var selectedRow = list.getGridParam("selrow");
-                rowData = list.getRowData(selectedRow);
+        function update(act) {
+            return {
+                closeAfterAdd: true,
+                height: 250,
+                width: 400,
+                closeAfterEdit: true,
+                reloadAfterSubmit: true,
+                drag: true,
+                onclickSubmit: function(params) {
+                    var list = $("#jqg");
+                    var selectedRow = list.getGridParam("selrow");
+                    rowData = list.getRowData(selectedRow);
+                    if (act === "add")
+                        params.url = '@Url.Action("Create")';
 
-                if (act === "add")
-                    params.url = '@Url.Action("Create")';
-                else if (act === "del")
-                    params.url = '@Url.Action("Delete")';
-                else if (act === "edit")
-                    params.url = '@Url.Action("Edit")';
-                
-            },
+                        else if (act === "del")
+                            params.url = '@Url.Action("Delete")';
+                        else if (act === "edit")
+                            params.url = '@Url.Action("Edit")';
+
+                },
                 afterSubmit: function(response, postdata) {
                     $(this).jqGrid('setGridParam', { datatype: 'json' }).trigger('reloadGrid')
                     return [true, "", 0]
                 }
+            };
         };
-    };
 
         jQuery("#jqg")
             .navGrid('#jpager', { edit: false, add: false, del: false, search: false })
             .navButtonAdd('#jpager', {
                 caption: "prod report",
                 onClickButton: function () {
+                  
                     $('.modal').on('shown.bs.modal', function () {
                         $(this).css("z-index", parseInt($('.modal-backdrop').css('z-index')) + 1);
                     });
-
-                    id = parseInt($('.ui-state-highlight').attr('id'));
-                    $('#myModal').modal('show');
-
-                    $("#stat").jqGrid({
+                    $('.modal').on('shown.bs.modal', '.modal', function() {
+                        $(this).create('bs.modal');
+                    });
+                    
+                    $('#statProductModel').modal('show');
+                    var id = parseInt($('.ui-state-highlight').attr('id'));
+                    
+                    $("#statProduct").jqGrid({
+                        ajaxGridOptions: { cache: false },
                         url: "/Product/GetStatisticProduct?id=" + id,
                         datatype: "json",
                         colNames: ['Product', 'Price', 'TotalQuantity', 'TotalCost'],
@@ -152,62 +180,115 @@
                             { name: 'TotalQuantity', index: 'TotalQuantity', width: 50, edittype: 'text' },
                             { name: 'TotalCost', index: 'TotalCost', width: 50, edittype: 'text', align: "right" }
                         ],
+
                         sortName: 'Name',
                         viewrecords: true,
                         sortOrder: "desc",
                         caption: "report poduct",
                         width: 400,
-                        loadonce: true,
-                        reloadGrid: true,
-                        drag: true
+                        loadonce: false
+                    });
+                    $('.modal').on('shown.bs.modal', "#statProductModel",'.modal', function () {
+                        $(this).remove();
                     });
                 },
+                
                 position: "last"
-            });
-
+          
+    });
+        
         jQuery("#jqg")
-           .navGrid('#jpager', { edit: false, add: false, del: false, search: false })
-           .navButtonAdd('#jpager', {
-               caption: "oper report",
-               onClickButton: function () {
-                   $('.modal').on('shown.bs.modal', function () {
-                       $(this).css("z-index", parseInt($('.modal-backdrop').css('z-index')) + 1);
-                   });
+            .navGrid('#jpager', { edit: false, add: false, del: false, search: false })
+            .navButtonAdd('#jpager', {
+                caption: "oper report",
+                onClickButton: function() {
+                    $('.modal').on('shown.bs.modal', function() {
+                        $(this).css("z-index", parseInt($('.modal-backdrop').css('z-index')) + 1);
+                    });
 
-                   id = parseInt($('.ui-state-highlight').attr('id'));
-                   $('#myModal').modal('show');
+                    var id = parseInt($('.ui-state-highlight').attr('id'));
+                    $('#statOperationModel').modal('show');
 
-                   $("#stat").jqGrid({
-                       url: "/Product/GetStatisticOperations?id=" + id,
-                       datatype: "json",
-                       colNames: ['User', 'CreatingDate', 'TotalQuantity', 'TypeOfOperation'],
-                       colModel: [
-                           { name: 'User', index: 'User', editable: true, width: 100, edittype: 'text', sortable: true },
-                           { name: 'CreatingDate', index: 'CreatingDate', width: 50, edittype: 'text', align: "right", sortable: true },
-                           { name: 'TotalQuantity', index: 'TotalQuantity', width: 50, edittype: 'text', sortable: true },
-                           { name: 'TypeOfOperation', index: 'TypeOfOperation', width: 50, edittype: 'text', align: "right", sortable: true }
-                       ],
-                       sortName: 'User',
-                       viewrecords: true,
-                       sortOrder: "desc",
-                       caption: "report operations",
-                       width: 400,
-                       loadonce: true
-                   });
+                    $("#statOperation").jqGrid({
+                        url: "/Product/GetStatisticOperations?id=" + id,
+                        datatype: "json",
+                        colNames: ['User', 'CreatingDate', 'TotalQuantity', 'TypeOfOperation'],
+                        colModel: [
+                            { name: 'User', index: 'User', editable: true, width: 100, edittype: 'text', sortable: true },
+                            { name: 'CreatingDate', index: 'CreatingDate', width: 100, formatter:'date', formatoptions:{srcformat:"Y-m-d",newformat:"d-M-Y"}, edittype: 'text', align: "right", sortable: true },
+                            { name: 'TotalQuantity', index: 'TotalQuantity', width: 100, edittype: 'text', sortable: true },
+                            { name: 'TypeOfOperation', index: 'TypeOfOperation', width: 100, edittype: 'text', align: "right", sortable: true }
+                        ],
+                        sortName: 'User',
+                        viewrecords: true,
+                        sortOrder: "desc",
+                        caption: "report operations",
+                        width: 400,
+                        loadonce: false,
+                        
+                    });
                 }
-           });
-        //in progress
+            });
+       
         jQuery("#jqg")
             .navGrid('#jpager', { edit: false, add: false, del: false, search: false })
             .navButtonAdd('#jpager', {
                 caption: "into/out goods",
-                onClickButton: function () {
-                    $('.modal').on('shown.bs.modal', function () {
-                        $(this).css("z-index", parseInt($('.modal-backdrop').css('z-index')) + 1);
+                onClickButton: function() {
+                    $.ajax({
+                        type: "Get",
+                        url: "/Product/GetSingle?id=" + parseInt($('.ui-state-highlight').attr('id')),
+                        data: "json",
+                        success: function(data) {
+                            $('.modal').on('shown.bs.modal', function() {
+                                $(this).css("z-index", parseInt($('.modal-backdrop').css('z-index')) + 1);
+                            });
+                            $('#operationForm').modal('show');
+                            $("#product").html(data.Name);
+                            $("#productId").attr("value", data.Id);
+                        }
                     });
-                },
-                position: "last"
+                    $.ajax({
+                        type: "Get",
+                        url: "/TypeOfOperation/Get",
+                        data: "json",
+                        success: function (data) {
+                            $("#in").html(data[0].Name);
+                            $("#out").html(data[1].Name);
+                        }
+                    });
+                }
             });
+        $(function () {
+            $("#saveOperation").on('click', isAvailable);
+        });
+        function isAvailable() {
+            $.ajax({
+                type: "Get",
+                url: "/Operation/SetQuantity",
+                data: {
+                    productId: $("#productId").attr("value"),
+                    quantity: $("#quantity").val(),
+                    typeOfOperation:
+                        $("#typeOfOperation option:selected").text()
+                },
+                success:
+                    function (response) {
+                        if (response.success) {
+                            $.post("/Operation/CreateOperation", {
+                                productId: $("#productId").attr("value"),
+                                quantity: $("#quantity").val(),
+                                typeOfOperation:
+                                    $("#typeOfOperation option:selected").text()
+                            }, function(response, status) {
+                                alert("Data: " + response + "\nStatus: " + status);
+                            });
+                        } else {
+                            $("#checkQuanty").text("this product has not such quantity");
+                        }
+                    },
+            });
+        }
     });
 </script>
 

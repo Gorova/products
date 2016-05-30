@@ -10,8 +10,6 @@ namespace ManagingProducts.Common.DTO
 
         public string Login { get; set; }
 
-        public string Password { get; set; }
-
-        public ICollection<Operation> Operations { get; set; }
+       public ICollection<Operation> Operations { get; set; }
     }
 }

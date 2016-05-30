@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using ManagingProducts.DAL.Entities;
-
-namespace ManagingProducts.Web.ViewModel
+﻿namespace ManagingProducts.Web.ViewModel
 {
     public class ProductStatisticViewModel
     {

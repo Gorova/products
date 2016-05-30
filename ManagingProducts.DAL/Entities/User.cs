@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace ManagingProducts.DAL.Entities
 {
@@ -11,8 +7,6 @@ namespace ManagingProducts.DAL.Entities
         public int Id { get; set; }
 
         public string Login { get; set; }
-
-        public string Password { get; set; }
 
         public virtual ICollection<Operation> Operations { get; set; } 
     }

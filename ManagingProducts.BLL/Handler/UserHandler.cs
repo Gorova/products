@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using AutoMapper;
 using ManagingProducts.BLL.API;
 using ManagingProducts.Common.DTO;
@@ -26,16 +27,19 @@ namespace ManagingProducts.BLL.Handler
 
         public void Add(UserDto userDto)
         {
-            var user = Mapper.Map<UserDto, User>(userDto);
-            //add user.operations
-            repository.Add(user);
-            repository.Save();
+            var user = repository.GetAll<User>().FirstOrDefault(i => i.Login == userDto.Login);
+            if (user == null)
+            {
+                var newUser = Mapper.Map<UserDto, User>(userDto);
+                repository.Add(newUser);
+                repository.Save();
+            }
         }
 
         public void Update(UserDto userDto)
         {
             var user = repository.Get<User>(userDto.Id);
-            //add user.operations
+            
             Mapper.Map(userDto, user);
             repository.Save();
         }
@@ -43,7 +47,7 @@ namespace ManagingProducts.BLL.Handler
         public void Delete(int id)
         {
             repository.Delete<UserDto>(id);
-            //clear user.operations
+            
             repository.Save();
         }
     }

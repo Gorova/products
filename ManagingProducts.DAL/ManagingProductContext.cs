@@ -8,7 +8,6 @@ namespace ManagingProducts.DAL
         public ManagingProductContext()
             : base("ManagingProducts")
         {
-            Database.SetInitializer<ManagingProductContext>(new ManagingProductsDbInitializer());
         }
 
         public DbSet<Operation> Operations { get; set; }

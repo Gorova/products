@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using AutoMapper;
 using ManagingProducts.BLL.API;
 using ManagingProducts.Common.DTO;
@@ -27,7 +28,7 @@ namespace ManagingProducts.BLL.Handler
         public void Add(OperationDto operationDto)
         {
             var operation = Mapper.Map<OperationDto, Operation>(operationDto);
-
+            
             repository.Add(operation);
             repository.Save();
         }

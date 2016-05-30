@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - My ASP.NET Application</title>
-    @Styles.Render("~/Content/css")
+    *@Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
@@ -13,12 +13,13 @@
     @Styles.Render("~/Content/jquery.jqGrid/ui.jqgrid.css")
     @Scripts.Render("~/Scripts/jquery.jqGrid.min.js")
     @Scripts.Render("~/Scripts/i18n/grid.locale-ru.js")
+    
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
     <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
     <script src="~/Scripts/modal.js"></script>
     <script src="~/Scripts/modal-manager.js"></script>
-    @*@Scripts.Render( src="js/min/jqDnR-min.js">)*@
-    
+   
+    @*<script src="~/Scripts/jquery.validate.js"></script>*@
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -47,7 +48,7 @@
     <footer>
         <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
     </footer>
-    @RenderSection("scripts", required: false)
+   @RenderSection("scripts", required: false)
 </div>
 </body>
 </html>

@@ -1,21 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using AutoMapper;
-using ManagingProduct.Bootstrap;
 using ManagingProducts.BLL.API;
 using ManagingProducts.Common.DTO;
 using ManagingProducts.Web.ViewModel;
+using Microsoft.AspNet.Identity;
 using Newtonsoft.Json;
 using Ninject;
 
 namespace ManagingProducts.Web.Controllers
 {
+    [Authorize]
     public class ProductController : BaseController<ProductDto>
     {
         public ActionResult Index()
         {
+            AddNewUser();
+
             return View();
         }
 
@@ -24,6 +26,14 @@ namespace ManagingProducts.Web.Controllers
             var viewModel = Mapper.Map<IEnumerable<ProductDto>, IEnumerable<ProductViewModel>>(handler.GetAll());
 
             return JsonConvert.SerializeObject(viewModel);
+        }
+
+        public JsonResult GetSingle(int id)
+        {
+            var productDto = handler.Get(id);
+            var productViewModel = Mapper.Map<ProductDto, ProductViewModel>(productDto);
+
+            return Json(productViewModel, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
@@ -43,8 +53,6 @@ namespace ManagingProducts.Web.Controllers
         [HttpPost]
         public void Delete(ProductViewModel viewModel)
         {
-            var product = handler.Get(viewModel.Id);
-
             var dto = Mapper.Map<ProductViewModel, ProductDto>(viewModel);
             handler.Delete(dto.Id);
         }
@@ -76,31 +84,35 @@ namespace ManagingProducts.Web.Controllers
             foreach (var op in operations)
             {
                 var statOperViewModel = new OperationStatisticViewModel();
-                statOperViewModel.User = op.User.ToString();
+                statOperViewModel.User = op.User.Login;
                 statOperViewModel.CreatingDate = op.DateOfOperation;
                 statOperViewModel.TotalQuantity = GetTotalQuantity(operations);
-                statOperViewModel.TypeOfOperation = op.TypeOfOperation.ToString();
+                statOperViewModel.TypeOfOperation = op.TypeOfOperation.Name;
                 list.Add(statOperViewModel);
              }
 
             return JsonConvert.SerializeObject(list);
         }
 
-        private int GetTotalQuantity(List<OperationDto> operations )
+        public JsonResult CheckUniqueName(ProductViewModel productViewModel)
         {
-            var quantity = 0;
-            
-            var intoQuantity = operations.Where(i => i.TypeOfOperation.Name == "into").Select(i => i.Quantity).Sum();
-            var outQuantity = operations.Where(i => i.TypeOfOperation.Name == "out").Select(i => i.Quantity).Sum();
-            quantity = intoQuantity - outQuantity;
+            var productsDto = handler.GetAll();
+            var productDto = productsDto.FirstOrDefault(i => i.Name == productViewModel.Name);
+            if (productDto != null)
+            {
+                return Json(new { success = false }, JsonRequestBehavior.AllowGet);
+            }
 
-            return quantity;
+            return Json(new { success = true }, JsonRequestBehavior.AllowGet);
         }
 
-        private List<OperationDto> GetOperations(int id)
+        private void AddNewUser()
         {
-            return kernel.Get<IHandler<OperationDto>>().GetAll().Where(i => i.ProductId == id).ToList();
-        } 
+            var userViewModel = new UserViewModel();
+            userViewModel.Login = User.Identity.GetUserName();
+            var userDto = Mapper.Map<UserViewModel, UserDto>(userViewModel);
+            kernel.Get<IHandler<UserDto>>().Add(userDto);
+        }
     }
 }
 

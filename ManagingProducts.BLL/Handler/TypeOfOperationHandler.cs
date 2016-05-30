@@ -13,8 +13,7 @@ namespace ManagingProducts.BLL.Handler
             : base(repository)
         {
         }
-           
-
+          
         public IEnumerable<TypeOfOperationDto> GetAll()
         {
             return Mapper.Map<IEnumerable<TypeOfOperation>, IEnumerable<TypeOfOperationDto>>(repository.GetAll<TypeOfOperation>());
@@ -28,7 +27,7 @@ namespace ManagingProducts.BLL.Handler
         public void Add(TypeOfOperationDto typeOfOperationDto)
         {
             var typeOfOperation = Mapper.Map<TypeOfOperationDto, Operation>(typeOfOperationDto);
-            ////add type.operations
+
             repository.Add(typeOfOperation);
             repository.Save();
         }
@@ -36,7 +35,7 @@ namespace ManagingProducts.BLL.Handler
         public void Update(TypeOfOperationDto typeOfOperationDto)
         {
             var typeOfOperation = repository.Get<Operation>(typeOfOperationDto.Id);
-            ///add type.operations
+            
             Mapper.Map(typeOfOperationDto, typeOfOperation);
             repository.Save();
         }
@@ -44,7 +43,7 @@ namespace ManagingProducts.BLL.Handler
         public void Delete(int id)
         {
             repository.Delete<TypeOfOperation>(id);
-            // clear type.operations
+            
             repository.Save();
         }
     }
