@@ -7,8 +7,8 @@ namespace ManagingProducts.Web.ViewModel
         public string User { get; set; }
 
         public string TypeOfOperation { get; set; }
-
-        public int TotalQuantity { get; set; }
+       
+        public int Quantity { get; set; }
 
         public  DateTime CreatingDate { get; set; }
     }

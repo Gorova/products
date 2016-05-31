@@ -47,7 +47,7 @@ namespace ManagingProducts.Web.Controllers
         public void Create(ProductViewModel viewModel)
         {
             var dto = Mapper.Map<ProductViewModel, ProductDto>(viewModel);
-            handler.Add(dto);
+                handler.Add(dto);
         }
 
         [HttpPost]
@@ -57,10 +57,8 @@ namespace ManagingProducts.Web.Controllers
             handler.Delete(dto.Id);
         }
 
-        public string GetStatisticProduct(int id)
+        public JsonResult GetStatisticProduct(int id)
         {
-            var dataForTable = new List<ProductStatisticViewModel>();
-
             var product = handler.Get(id);
             var productStatisticViewModel = new ProductStatisticViewModel();
             
@@ -72,8 +70,7 @@ namespace ManagingProducts.Web.Controllers
             productStatisticViewModel.TotalQuantity = quantity;
             productStatisticViewModel.TotalCost = quantity * price;
             
-            dataForTable.Add(productStatisticViewModel);
-            return JsonConvert.SerializeObject(dataForTable);
+            return Json(productStatisticViewModel, JsonRequestBehavior.AllowGet);
         }
 
         public string GetStatisticOperations(int id)
@@ -86,7 +83,7 @@ namespace ManagingProducts.Web.Controllers
                 var statOperViewModel = new OperationStatisticViewModel();
                 statOperViewModel.User = op.User.Login;
                 statOperViewModel.CreatingDate = op.DateOfOperation;
-                statOperViewModel.TotalQuantity = GetTotalQuantity(operations);
+                statOperViewModel.Quantity = op.Quantity;
                 statOperViewModel.TypeOfOperation = op.TypeOfOperation.Name;
                 list.Add(statOperViewModel);
              }

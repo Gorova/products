@@ -24,8 +24,6 @@ namespace ManagingProducts.Web.Controllers
         {
             kernel = Kernel.Initialize();
             handler = kernel.Get<IHandler<TDto>>();
-            //this.ApplicationDbContext = new ApplicationDbContext();
-            //this.UserManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(this.ApplicationDbContext));
         }
 
         public int GetTotalQuantity(List<OperationDto> operations)
